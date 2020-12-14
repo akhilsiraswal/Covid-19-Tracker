@@ -6,18 +6,22 @@ import {
   Select,
   Card,
 } from "@material-ui/core";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import InfoBox from "./InfoBox";
 import Map from "./Map";
 import Table from "./Table";
 import { sortData } from "./util";
 import LineGraph from "./LineGraph";
+import "leaflet/dist/leaflet.css";
 
 function App() {
   const [countries, setCountries] = useState([]);
   const [country, setCountry] = useState("worldwide");
   const [countryInfo, setCountryInfo] = useState({});
   const [tableData, setTableData] = useState([]);
+  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
+  const [mapZoom, setMapZoom] = useState(3);
+  const [mapCountries, setMapCountries] = useState([]);
 
   useEffect(() => {
     fetch("https://disease.sh/v3/covid-19/all")
@@ -46,6 +50,7 @@ function App() {
 
           const sortedData = sortData(data);
           setTableData(sortedData);
+          setMapCountries(data);
           setCountries(countries);
         });
     };
@@ -69,12 +74,12 @@ function App() {
         // All of the data data...
         // from the country response
         setCountryInfo(data);
+        setMapCenter([data.countryInfo.lat, data.countryInfo.lng]);
       });
 
     //
     //
   };
-  console.log("CountryInfo:: >>", countryInfo);
   return (
     <div className="app">
       <div className="app__left">
@@ -98,20 +103,20 @@ function App() {
           <InfoBox
             title="CoronaVirus cases"
             cases={countryInfo.todayCases}
-            total={2000}
+            total={countryInfo.Cases}
           />
           <InfoBox
             title="Recovered "
             cases={countryInfo.todayRecovered}
-            total={countryInfo.cases}
+            total={countryInfo.totalRecovered}
           />
           <InfoBox
             title="Deaths"
             cases={countryInfo.todayDeaths}
-            total={4000}
+            total={countryInfo.totalDeaths}
           />
         </div>
-        <Map />
+        <Map center={mapCenter} zoom={mapZoom} countries={mapCountries} />
       </div>
 
       <Card className="app__right">
